@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}TuneScope AI | Preprocessing{% endblock %}
+
+{% block content %}
+{% if error %}
+<section class="error-panel">
+    <p class="eyebrow">DATA PREPARATION</p>
+    <h1>Preprocessing could not be generated</h1>
+    <p>{{ error }}</p>
+</section>
+{% else %}
+<header class="page-heading">
+    <div>
+        <p class="eyebrow">TUNESCOPE AI / FEATURE ENGINEERING</p>
+        <h1>Preprocessing</h1>
+        <p class="subtitle">Convert categorical music features into numerical representations for machine learning.</p>
+    </div>
+    <div class="connection-badge"><span class="status-dot"></span>{{ "{:,}".format(total_rows) }} records · {{ total_columns }} columns</div>
+</header>
+
+<section class="preprocess-section">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">OVERVIEW</p>
+            <h2>Encoding Features</h2>
+            <p class="section-description">The original CSV remains unchanged. Encoded output tables below show a preview of the transformations.</p>
+        </div>
+        <span class="section-chip">{{ encoding_features|length }} input features</span>
+    </div>
+    <div class="table-scroll preprocess-table-scroll">{{ feature_summary_table|safe }}</div>
+    <p class="preprocess-note"><strong>Selected features:</strong> {{ encoding_features|join(", ") }}. The numeric-looking <code>key</code>, <code>mode</code>, and <code>time_signature</code> fields are treated as categories for these demonstrations.</p>
+</section>
+
+<section class="preprocess-section" id="onehot-encoding">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">01 / BINARY REPRESENTATION</p>
+            <h2>One-Hot Encoding</h2>
+            <p class="section-description">Creates a separate 0/1 column for each category. This avoids introducing an artificial order between categories.</p>
+        </div>
+        <span class="section-chip">{{ onehot_output_columns }} encoded columns</span>
+    </div>
+    <div class="preprocess-callout">Each row activates the columns matching its original category. The table shows the first 12 records; scroll horizontally to inspect the generated columns.</div>
+    <div class="table-scroll preprocess-table-scroll onehot-scroll">{{ onehot_preview_table|safe }}</div>
+    <h3 class="preprocess-subheading">One-Hot Encoding Summary</h3>
+    <div class="table-scroll preprocess-table-scroll">{{ onehot_summary_table|safe }}</div>
+</section>
+
+<section class="preprocess-section" id="ordinal-encoding">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">02 / CATEGORY CODES</p>
+            <h2>Ordinal Encoding</h2>
+            <p class="section-description">Assigns an integer code to each category. These codes are labels and do not imply that one genre or category is greater than another.</p>
+        </div>
+        <span class="section-chip">Integer label codes</span>
+    </div>
+    <h3 class="preprocess-subheading">Encoded Records</h3>
+    <div class="table-scroll preprocess-table-scroll">{{ ordinal_preview_table|safe }}</div>
+    <h3 class="preprocess-subheading">Category-to-Code Mapping</h3>
+    <div class="table-scroll preprocess-table-scroll mapping-scroll">{{ ordinal_mapping_table|safe }}</div>
+</section>
+
+<section class="preprocess-section" id="target-encoding">
+    <div class="section-heading">
+        <div>
+            <p class="eyebrow">03 / TARGET-BASED ENCODING</p>
+            <h2>Target Encoding</h2>
+            <p class="section-description">Maps each genre to the average popularity observed for that genre in the training split.</p>
+        </div>
+        <span class="section-chip">{{ target_category_count }} genres</span>
+    </div>
+    <div class="preprocess-kpis">
+        <div><span>Training Records</span><strong>{{ "{:,}".format(target_train_records) }}</strong></div>
+        <div><span>Testing Records</span><strong>{{ "{:,}".format(target_test_records) }}</strong></div>
+        <div><span>Training Mean Popularity</span><strong>{{ target_global_mean }}</strong></div>
+    </div>
+    <div class="preprocess-callout">To reduce target leakage in this demonstration, category averages are learned from the training split and applied to the held-out test preview. Genres not seen in training use the training-set mean.</div>
+    <h3 class="preprocess-subheading">Target-Encoding Preview (Held-Out Test Records)</h3>
+    <div class="table-scroll preprocess-table-scroll">{{ target_preview_table|safe }}</div>
+    <h3 class="preprocess-subheading">Genre Popularity Mapping (Training Data Only)</h3>
+    <div class="table-scroll preprocess-table-scroll mapping-scroll">{{ target_mapping_table|safe }}</div>
+</section>
+
+<p class="preprocess-footer"><span class="status-dot"></span> Preprocessing outputs are demonstrations for feature engineering. The source dataset is loaded without changes.</p>
+{% endif %}
+{% endblock %}

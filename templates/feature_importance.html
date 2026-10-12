@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}TuneScope AI | Feature Importance{% endblock %}
+
+{% block content %}
+{% if error %}
+<section class="error-panel">
+    <p class="eyebrow">MODEL INTERPRETATION</p>
+    <h1>Feature Importance</h1>
+    <p>{{ error }}</p>
+</section>
+{% else %}
+<header class="page-heading">
+    <div>
+        <p class="eyebrow">TUNESCOPE AI / MODEL INTERPRETATION</p>
+        <h1>Feature Importance</h1>
+        <p class="subtitle">Discover which audio features influence the popularity-category predictions across multiple tree-based models.</p>
+    </div>
+    <div class="connection-badge"><span class="status-dot"></span>{{ model_names|length }} models compared</div>
+</header>
+
+<div class="featureimp-kpis">
+    <article class="featureimp-kpi"><span>DATASET RECORDS</span><strong>{{ "{:,}".format(total_records) }}</strong><small>Original CSV rows</small></article>
+    <article class="featureimp-kpi"><span>VALID RECORDS USED</span><strong>{{ "{:,}".format(used_records) }}</strong><small>Rows with valid popularity score</small></article>
+    <article class="featureimp-kpi"><span>AUDIO FEATURES</span><strong>{{ feature_count }}</strong><small>Features used for model training</small></article>
+    <article class="featureimp-kpi"><span>MODELS COMPARED</span><strong>{{ model_names|length }}</strong><small>Importance values normalized to 100%</small></article>
+</div>
+
+{% if availability_notes %}
+<div class="featureimp-note">
+    <strong>Model availability notes</strong>
+    <ul>{% for item in availability_notes %}<li>{{ item }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+<!-- 1. Important Features graph -->
+<section class="featureimp-section" id="important-features-graph">
+    <div class="section-heading">
+        <div><p class="eyebrow">01 / RANKED VISUALIZATION</p><h2>Important Features — Graph</h2><p class="section-description">Top audio features ranked by their average normalized importance across the available models.</p></div>
+        <span class="section-chip">Top 10 features</span>
+    </div>
+    <div class="featureimp-panel"><img class="featureimp-chart" src="data:image/png;base64,{{ important_features_chart }}" alt="Graph of top important features"></div>
+</section>
+
+<!-- 2. Top important features in requested table layout -->
+<section class="featureimp-section" id="top-important-features">
+    <div class="section-heading">
+        <div><p class="eyebrow">02 / MOST INFLUENTIAL INPUTS</p><h2>2. Top Important Features</h2><p class="section-description">Ranked features using average importance from the fitted models. The table layout follows your reference screenshot.</p></div>
+        <span class="section-chip">Rank · Feature · Average Importance</span>
+    </div>
+    <div class="featureimp-table-scroll">{{ top_features_table|safe }}</div>
+</section>
+
+<!-- 3. Feature importance comparison -->
+<section class="featureimp-section" id="feature-importance-comparison">
+    <div class="section-heading">
+        <div><p class="eyebrow">03 / MODEL COMPARISON</p><h2>Feature Importance Comparison</h2><p class="section-description">Compare the relative contribution scores assigned to the same features by each available model.</p></div>
+        <span class="section-chip">{{ model_names|length }} models</span>
+    </div>
+    <div class="featureimp-panel featureimp-comparison-chart"><img class="featureimp-chart" src="data:image/png;base64,{{ comparison_chart }}" alt="Feature importance comparison chart by model"></div>
+    <h3 class="featureimp-subheading">Model-by-Model Importance Table</h3>
+    <div class="featureimp-table-scroll featureimp-comparison-table">{{ comparison_table|safe }}</div>
+    <div class="featureimp-note">{{ notes }}</div>
+</section>
+
+<!-- Model training details -->
+<section class="featureimp-section" id="model-information">
+    <div class="section-heading">
+        <div><p class="eyebrow">MODEL INFORMATION</p><h2>Training Summary</h2><p class="section-description">All available models use the same stratified 80/20 train-test split and the same audio-feature columns.</p></div>
+    </div>
+    <div class="featureimp-table-scroll">{{ model_settings_table|safe }}</div>
+</section>
+{% endif %}
+{% endblock %}

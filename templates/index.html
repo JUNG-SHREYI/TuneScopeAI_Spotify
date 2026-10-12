@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}TuneScope AI | Dataset{% endblock %}
+{% block content %}
+{% if error %}
+    <section class="error-panel">
+        <p class="eyebrow">DATA SOURCE</p>
+        <h1>Dataset could not be loaded</h1>
+        <p>{{ error }}</p>
+        <p class="help-text">Keep your dataset at <code>Data/dataset.csv</code> and refresh this page.</p>
+    </section>
+{% else %}
+    <header class="page-heading">
+        <div>
+            <p class="eyebrow">TUNESCOPE AI <span class="crumb-slash">/</span> DATA EXPLORER</p>
+            <h1>Dataset</h1>
+            <p class="subtitle">Browse the original Spotify dataset, one page at a time.</p>
+        </div>
+        <div class="connection-badge"><span class="status-dot"></span> Raw CSV connected</div>
+    </header>
+
+    <section class="dataset-card" aria-label="Raw dataset">
+        <div class="table-toolbar">
+            <div>
+                <p class="eyebrow">DATASET CONTENTS</p>
+                <h2>Raw Spotify data</h2>
+                <p class="table-subtitle">Showing rows {{ first_row }}–{{ last_row }} of {{ total_rows }}</p>
+            </div>
+            <div class="record-badge">
+                <strong>{{ "{:,}".format(total_rows) }}</strong>
+                <span>total records</span>
+            </div>
+        </div>
+        <div class="table-scroll">
+            <table class="raw-table">
+                <thead><tr>{% for column in columns %}<th scope="col">{{ column }}</th>{% endfor %}</tr></thead>
+                <tbody>
+                    {% for row in rows %}
+                    <tr>{% for value in row %}<td title="{{ value }}">{{ value }}</td>{% endfor %}</tr>
+                    {% else %}<tr><td class="empty-cell" colspan="{{ columns|length }}">No records found in the dataset.</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <footer class="table-footer">
+            <span>Page {{ page }} of {{ total_pages }} <span class="footer-divider">·</span> {{ columns|length }} columns</span>
+            <nav class="pagination" aria-label="Dataset pages">
+                {% if page > 1 %}
+                    <a class="page-button" href="{{ url_for('dataset_page', page=1) }}">First</a>
+                    <a class="page-button" href="{{ url_for('dataset_page', page=page-1) }}">Previous</a>
+                {% else %}<span class="page-button disabled">First</span><span class="page-button disabled">Previous</span>{% endif %}
+                <span class="page-current">{{ page }}</span>
+                {% if page < total_pages %}
+                    <a class="page-button" href="{{ url_for('dataset_page', page=page+1) }}">Next</a>
+                    <a class="page-button" href="{{ url_for('dataset_page', page=total_pages) }}">Last</a>
+                {% else %}<span class="page-button disabled">Next</span><span class="page-button disabled">Last</span>{% endif %}
+            </nav>
+        </footer>
+    </section>
+{% endif %}
+{% endblock %}

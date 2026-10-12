@@ -1,0 +1,97 @@
+﻿{% extends "base.html" %}
+{% block title %}ML Engineering & Deployment – TuneScope AI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">CO6 – ML Engineering &amp; Deployment</h1>
+  <p class="page-subtitle">Model Packaging · MLflow Experiment Tracking · FastAPI REST Service · Drift Detection · Batch Scoring · CI/CD Pipeline · Retraining Strategies</p>
+</div>
+
+{% if error %}
+<div class="alert alert-error">{{ error }}</div>
+{% else %}
+
+<!-- ── Key Metrics ─────────────────────────────────────────────────────── -->
+<div class="metric-row">
+  <div class="metric-card"><div class="metric-value">{{ pkg_accuracy }}</div><div class="metric-label">Packaged Model Accuracy</div></div>
+  <div class="metric-card"><div class="metric-value">{{ pkg_size }} KB</div><div class="metric-label">Model File Size</div></div>
+  <div class="metric-card"><div class="metric-value">{{ mlflow_best_run }}</div><div class="metric-label">Best MLflow Run</div></div>
+  <div class="metric-card"><div class="metric-value">{{ mlflow_best_acc }}</div><div class="metric-label">Best Experiment Accuracy</div></div>
+  <div class="metric-card"><div class="metric-value">{{ batch_throughput }}/s</div><div class="metric-label">Batch Throughput</div></div>
+</div>
+
+<!-- ── Model Packaging ───────────────────────────────────────────────── -->
+<section class="card" id="packaging">
+  <h2 class="section-title">5–7. Model Packaging (Joblib &amp; ONNX)</h2>
+  <p class="section-desc">Models are serialized with <strong>joblib</strong> (sklearn-native, fast I/O with compression). <strong>ONNX</strong> enables framework-agnostic deployment across runtimes (ONNX Runtime, TensorRT, Edge). The metadata JSON acts as the model card.</p>
+  <div class="table-wrapper">{{ pkg_table|safe }}</div>
+  <div class="alert alert-info" style="margin-top:1rem;">
+    <strong>ONNX Export</strong> (when <code>skl2onnx</code> is installed): <code>convert_sklearn(pipeline, "TuneScopeModel", initial_types)</code> — enables cross-platform inference without Python.
+  </div>
+</section>
+
+<!-- ── FastAPI REST ──────────────────────────────────────────────────── -->
+<section class="card" id="api">
+  <h2 class="section-title">8–11. FastAPI REST API &amp; Real-Time Prediction Service</h2>
+  <p class="section-desc">FastAPI provides automatic OpenAPI docs, async request handling, and Pydantic validation. The /predict endpoint returns a popularity class and confidence in &lt;5 ms.</p>
+  <h3 class="subsection-title">API Endpoints</h3>
+  <div class="table-wrapper">{{ api_endpoints_table|safe }}</div>
+  <h3 class="subsection-title">FastAPI Service Blueprint</h3>
+  <pre class="code-block">{{ api_code }}</pre>
+</section>
+
+<!-- ── Feature Store ────────────────────────────────────────────────── -->
+<section class="card" id="featurestore">
+  <h2 class="section-title">12–14. Feature Stores &amp; Training-Serving Consistency</h2>
+  <p class="section-desc">A Feature Store (e.g., Feast, Tecton) separates feature engineering from model training, guaranteeing identical transformations at training time and serving time. <strong>Point-in-Time Correctness</strong> prevents future data leakage in time-series feature joins.</p>
+  <div class="table-wrapper">{{ feat_store_table|safe }}</div>
+</section>
+
+<!-- ── MLflow ────────────────────────────────────────────────────────── -->
+<section class="card" id="mlflow">
+  <h2 class="section-title">15–17. Experiment Tracking (MLflow) &amp; Data/Model Versioning (DVC)</h2>
+  <p class="section-desc">Every training run is logged: parameters, metrics, artifacts, and environment. DVC versions datasets and models alongside code commits, enabling full reproducibility.</p>
+  <div class="metric-row">
+    <div class="metric-card"><div class="metric-value">{{ mlflow_best_run }}</div><div class="metric-label">Best Experiment</div></div>
+    <div class="metric-card"><div class="metric-value">{{ mlflow_best_acc }}</div><div class="metric-label">Best Accuracy</div></div>
+  </div>
+  <div class="chart-container"><img src="data:image/png;base64,{{ mlflow_chart }}" alt="MLflow experiment comparison" class="chart-img"></div>
+  <div class="table-wrapper">{{ mlflow_table|safe }}</div>
+</section>
+
+<!-- ── Drift Detection ──────────────────────────────────────────────── -->
+<section class="card" id="drift">
+  <h2 class="section-title">18–20. Drift Detection, Performance Monitoring &amp; Observability</h2>
+  <p class="section-desc">The Kolmogorov-Smirnov test compares training feature distributions against production data. Significant drift (p &lt; 0.05) triggers a retraining alert. Model observability integrates prediction logging, latency tracking, and business KPI monitoring.</p>
+  <div class="metric-row">
+    <div class="metric-card"><div class="metric-value">{{ drift_n_features }}</div><div class="metric-label">Features Monitored</div></div>
+    <div class="metric-card"><div class="metric-value" style="color:{% if drift_n_drifted > 0 %}#ef4444{% else %}#55e6aa{% endif %}">{{ drift_n_drifted }}</div><div class="metric-label">Features with Drift</div></div>
+  </div>
+  <div class="chart-container"><img src="data:image/png;base64,{{ drift_chart }}" alt="Drift detection" class="chart-img"></div>
+  <div class="table-wrapper">{{ drift_table|safe }}</div>
+</section>
+
+<!-- ── End-to-End Pipeline ──────────────────────────────────────────── -->
+<section class="card" id="pipeline">
+  <h2 class="section-title">21–22. End-to-End ML Pipeline &amp; Batch Scoring</h2>
+  <div class="metric-row">
+    <div class="metric-card"><div class="metric-value">{{ batch_latency }} ms</div><div class="metric-label">Batch Latency (500 samples)</div></div>
+    <div class="metric-card"><div class="metric-value">{{ batch_throughput }}/s</div><div class="metric-label">Predictions per Second</div></div>
+  </div>
+  <h3 class="subsection-title">Pipeline Steps</h3>
+  <div class="table-wrapper">{{ pipeline_table|safe }}</div>
+  <h3 class="subsection-title">Batch Scoring Metrics</h3>
+  <div class="table-wrapper">{{ batch_table|safe }}</div>
+</section>
+
+<!-- ── CI/CD ─────────────────────────────────────────────────────────── -->
+<section class="card" id="cicd">
+  <h2 class="section-title">23–24. CI/CD for Machine Learning &amp; Model Retraining Pipeline</h2>
+  <p class="section-desc">A fully automated CI/CD pipeline validates data, trains models, evaluates thresholds, registers artifacts, and deploys to production — all triggered by a git commit.</p>
+  <div class="table-wrapper">{{ cicd_table|safe }}</div>
+  <h3 class="subsection-title">Retraining Strategies</h3>
+  <div class="table-wrapper">{{ retrain_table|safe }}</div>
+</section>
+
+{% endif %}
+{% endblock %}

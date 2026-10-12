@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}TuneScope AI | Regressions{% endblock %}
+{% block content %}
+{% if error %}
+<section class="error-panel">
+    <p class="eyebrow">MODEL WORKSPACE</p>
+    <h1>Regression analysis could not be generated</h1>
+    <p>{{ error }}</p>
+    <p>Check that your dataset is available at <code>Data/dataset.csv</code> and contains a numeric <code>popularity</code> column.</p>
+</section>
+{% else %}
+<header class="page-heading">
+    <div>
+        <p class="eyebrow">TUNESCOPE AI <span class="crumb-slash">/</span> MODEL WORKSPACE</p>
+        <h1>Regressions</h1>
+        <p class="subtitle">Compare Linear, Lasso, Logistic, and Ridge Regression using Spotify audio features.</p>
+    </div>
+    <div class="connection-badge"><span class="status-dot"></span> {{ "{:,}".format(total_records) }} usable records</div>
+</header>
+
+<div class="regression-intro">
+    <div><span class="eyebrow">TARGET VARIABLE</span><h2>Track Popularity</h2><p>Numerical audio features predict popularity scores from 0 to 100. Popularity categories are project-defined ranges.</p></div>
+    <div class="intro-stat"><strong>{{ feature_count }}</strong><span>audio features</span></div>
+</div>
+
+<!-- 1. LINEAR REGRESSION -->
+<section class="regression-section" id="linear-regression">
+    <div class="regression-section-heading"><div><p class="eyebrow">01 / BASELINE REGRESSION</p><h2>Linear Regression</h2><p class="section-description">Fits a linear relationship between standardized audio features and track popularity.</p></div><span class="section-chip">Ordinary Least Squares</span></div>
+    <div class="regression-grid">
+        <article class="regression-panel regression-chart-panel"><h3>Regression Visualisation</h3><p class="panel-caption">Actual Popularity vs Predicted Popularity</p><img class="regression-chart" src="data:image/png;base64,{{ linear.chart }}" alt="Linear regression actual versus predicted popularity plot"></article>
+        <article class="regression-panel"><h3>Model Performance</h3><p class="panel-caption">Metrics are calculated on the held-out test set.</p><div class="table-scroll regression-table-scroll">{{ linear.metrics_table|safe }}</div><h3 class="subpanel-heading">Training and Testing Records</h3><div class="table-scroll regression-table-scroll">{{ linear.split_table|safe }}</div></article>
+    </div>
+    <article class="regression-panel full-panel"><h3>Regression Equation (Slope Coefficients)</h3><p class="panel-caption">Coefficients are based on standardized features, z(feature), because scaling is fitted on the training data.</p><div class="equation-box">{{ linear.equation }}</div><div class="regression-kpis"><div><span>Y-Intercept</span><strong>{{ "%.5f"|format(linear.intercept) }}</strong></div><div><span>Train records</span><strong>{{ "{:,}".format(linear.train_count) }}</strong></div><div><span>Test records</span><strong>{{ "{:,}".format(linear.test_count) }}</strong></div></div><h3 class="subpanel-heading">Slope Coefficients</h3><div class="table-scroll regression-table-scroll">{{ linear.coefficients_table|safe }}</div></article>
+</section>
+
+<!-- 2. LASSO REGRESSION -->
+<section class="regression-section" id="lasso-regression">
+    <div class="regression-section-heading"><div><p class="eyebrow">02 / FEATURE SHRINKAGE</p><h2>Lasso Regression</h2><p class="section-description">Uses L1 regularization to shrink less useful coefficients, sometimes all the way to zero.</p></div><span class="section-chip">Alpha = {{ lasso.alpha }}</span></div>
+    <div class="regression-grid">
+        <article class="regression-panel regression-chart-panel"><h3>Regression Visualisation</h3><p class="panel-caption">Residual Analysis: residual = actual − predicted.</p><img class="regression-chart" src="data:image/png;base64,{{ lasso.residual_chart }}" alt="Lasso regression residual scatter and residual histogram"></article>
+        <article class="regression-panel"><h3>Model Setting</h3><p class="panel-caption">Training configuration used by the current run.</p><div class="setting-list"><div><span>Regularization</span><strong>L1 (Lasso)</strong></div><div><span>Alpha</span><strong>{{ lasso.alpha }}</strong></div><div><span>Maximum iterations</span><strong>{{ "{:,}".format(lasso.max_iter) }}</strong></div><div><span>Preprocessing</span><strong>Median imputer + StandardScaler</strong></div></div><h3 class="subpanel-heading">Test Performance</h3><div class="table-scroll regression-table-scroll">{{ lasso.metrics_table|safe }}</div></article>
+    </div>
+    <article class="regression-panel full-panel"><h3>Regression Equation (Slope Coefficients)</h3><p class="panel-caption">The residual plots show how prediction errors vary with predicted values and whether the residual distribution is centered around zero.</p><div class="equation-box">{{ lasso.equation }}</div><div class="regression-kpis"><div><span>Y-Intercept</span><strong>{{ "%.5f"|format(lasso.intercept) }}</strong></div><div><span>Training records</span><strong>{{ "{:,}".format(lasso.train_count) }}</strong></div><div><span>Testing records</span><strong>{{ "{:,}".format(lasso.test_count) }}</strong></div></div><h3 class="subpanel-heading">Lasso Slope Coefficients</h3><div class="table-scroll regression-table-scroll">{{ lasso.coefficients_table|safe }}</div></article>
+</section>
+
+<!-- 3. LOGISTIC REGRESSION -->
+<section class="regression-section" id="logistic-regression">
+    <div class="regression-section-heading"><div><p class="eyebrow">03 / POPULARITY CLASSIFICATION</p><h2>Logistic Regression</h2><p class="section-description">Classifies tracks into popularity categories using audio features (not the popularity score itself).</p></div><span class="section-chip">Multiclass</span></div>
+    <div class="regression-grid">
+        <article class="regression-panel regression-chart-panel"><h3>Confusion Matrix</h3><p class="panel-caption">Rows are actual categories; columns are predicted categories.</p><img class="regression-chart" src="data:image/png;base64,{{ logistic.confusion_chart }}" alt="Logistic regression confusion matrix for popularity categories"></article>
+        <article class="regression-panel"><h3>Test Accuracy</h3><div class="accuracy-display"><strong>{{ "%.2f"|format(logistic.accuracy_percent) }}%</strong><span>Correct category predictions in the held-out test set</span></div><h3 class="subpanel-heading">Training and Testing Records</h3><div class="table-scroll regression-table-scroll">{{ logistic.split_table|safe }}</div><p class="panel-caption model-setting-note">{{ logistic.model_setting }}</p></article>
+    </div>
+    <article class="regression-panel full-panel"><h3>Popularity Categories</h3><p class="panel-caption">These score ranges are defined for this project and are not official Spotify categories.</p><div class="table-scroll regression-table-scroll">{{ popularity_categories_table|safe }}</div><h3 class="subpanel-heading">Popularity Category Distribution</h3><img class="regression-chart distribution-chart" src="data:image/png;base64,{{ logistic.category_distribution_chart }}" alt="Distribution of tracks across popularity categories"><div class="table-scroll regression-table-scroll">{{ logistic.category_distribution_table|safe }}</div></article>
+    <article class="regression-panel full-panel"><h3>Classification Report</h3><p class="panel-caption">Precision, recall, and F1 score are reported for each category, along with macro and weighted averages. Support is the number of test examples for that class.</p><div class="table-scroll regression-table-scroll">{{ logistic.classification_report_table|safe }}</div><h3 class="subpanel-heading">Confusion Matrix Values</h3><div class="table-scroll regression-table-scroll">{{ logistic.confusion_table|safe }}</div></article>
+</section>
+
+<!-- 4. RIDGE REGRESSION -->
+<section class="regression-section" id="ridge-regression">
+    <div class="regression-section-heading"><div><p class="eyebrow">04 / L2 REGULARIZATION</p><h2>Ridge Regression</h2><p class="section-description">Adds L2 regularization to reduce coefficient size and help control overfitting.</p></div><span class="section-chip">Alpha = {{ ridge.alpha }}</span></div>
+    <div class="regression-grid">
+        <article class="regression-panel regression-chart-panel"><h3>Regression Visualisation</h3><p class="panel-caption">Actual Popularity vs Predicted Popularity</p><img class="regression-chart" src="data:image/png;base64,{{ ridge.chart }}" alt="Ridge regression actual versus predicted popularity plot"></article>
+        <article class="regression-panel"><h3>Graph Interpretation</h3><p class="interpretation-text">{{ ridge.graph_interpretation }}</p><h3 class="subpanel-heading">Model Performance</h3><div class="table-scroll regression-table-scroll">{{ ridge.metrics_table|safe }}</div></article>
+    </div>
+    <article class="regression-panel full-panel"><h3>Model Equation and Intercept</h3><div class="equation-box">{{ ridge.equation }}</div><div class="regression-kpis"><div><span>Model Intercept</span><strong>{{ "%.5f"|format(ridge.intercept) }}</strong></div><div><span>Training records</span><strong>{{ "{:,}".format(ridge.train_count) }}</strong></div><div><span>Testing records</span><strong>{{ "{:,}".format(ridge.test_count) }}</strong></div></div><h3 class="subpanel-heading">Model Coefficients</h3><div class="table-scroll regression-table-scroll">{{ ridge.coefficients_table|safe }}</div><h3 class="subpanel-heading">Audio Feature Analysis</h3><p class="panel-caption">Relative influence is the absolute standardized coefficient divided by the sum of absolute coefficients. This is a model-based association, not proof of causation.</p><div class="table-scroll regression-table-scroll">{{ ridge.audio_analysis_table|safe }}</div><h3 class="subpanel-heading">Training and Testing Records</h3><div class="table-scroll regression-table-scroll">{{ ridge.split_table|safe }}</div></article>
+</section>
+
+<div class="regression-footnote"><span class="status-dot"></span> All reported scores are calculated from your CSV using an 80/20 hold-out split with random_state = 42. Coefficients use standardized audio features.</div>
+{% endif %}
+{% endblock %}

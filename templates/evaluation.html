@@ -1,0 +1,125 @@
+﻿{% extends "base.html" %}
+{% block title %}Model Evaluation & Optimization – TuneScope AI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">CO5 – Model Evaluation &amp; Optimization</h1>
+  <p class="page-subtitle">Train/Val/Test Split · Cross-Validation · Classification &amp; Regression Metrics · ROC · PR Curves · Hyperparameter Tuning · Learning Curves · Calibration · Statistical Tests</p>
+</div>
+
+{% if error %}
+<div class="alert alert-error">{{ error }}</div>
+{% else %}
+
+<!-- ── Key Metrics Banner ──────────────────────────────────────────────── -->
+<div class="metric-row">
+  <div class="metric-card"><div class="metric-value">{{ cv_mean }}</div><div class="metric-label">5-Fold CV Accuracy (RF)</div></div>
+  <div class="metric-card"><div class="metric-value">{{ clf_accuracy }}</div><div class="metric-label">Test Accuracy</div></div>
+  <div class="metric-card"><div class="metric-value">{{ clf_f1 }}</div><div class="metric-label">Weighted F1-Score</div></div>
+  <div class="metric-card"><div class="metric-value">{{ reg_r2 }}</div><div class="metric-label">Regression R²</div></div>
+  <div class="metric-card"><div class="metric-value">{{ gs_best_score }}</div><div class="metric-label">Grid Search Best CV</div></div>
+</div>
+
+<!-- ── Data Split & CV ─────────────────────────────────────────────────── -->
+<section class="card" id="split">
+  <h2 class="section-title">1–4. Train/Validation/Test Split &amp; Cross-Validation</h2>
+  <p class="section-desc">A 70/15/15 split ensures the test set remains completely unseen. 5-fold cross-validation provides a robust, low-variance accuracy estimate. Data leakage is prevented by fitting all transformers only on the training fold.</p>
+  <div class="grid-2">
+    <div>
+      <h3 class="subsection-title">Data Splits</h3>
+      <div class="table-wrapper">{{ split_table|safe }}</div>
+    </div>
+    <div>
+      <h3 class="subsection-title">5-Fold Cross-Validation</h3>
+      <div class="table-wrapper">{{ cv_table|safe }}</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Classification Metrics ─────────────────────────────────────────── -->
+<section class="card" id="classification">
+  <h2 class="section-title">5–9. Classification Metrics, ROC &amp; Precision-Recall Curves</h2>
+  <div class="metric-row">
+    <div class="metric-card"><div class="metric-value">{{ clf_accuracy }}</div><div class="metric-label">Accuracy</div></div>
+    <div class="metric-card"><div class="metric-value">{{ clf_precision }}</div><div class="metric-label">Precision (weighted)</div></div>
+    <div class="metric-card"><div class="metric-value">{{ clf_recall }}</div><div class="metric-label">Recall (weighted)</div></div>
+    <div class="metric-card"><div class="metric-value">{{ clf_f1 }}</div><div class="metric-label">F1-Score (weighted)</div></div>
+  </div>
+
+  <h3 class="subsection-title">Confusion Matrix &amp; Metrics Summary</h3>
+  <div class="chart-container"><img src="data:image/png;base64,{{ cm_chart }}" alt="Confusion Matrix" class="chart-img"></div>
+
+  <h3 class="subsection-title">ROC Curves &amp; Precision-Recall Curves</h3>
+  <div class="chart-container"><img src="data:image/png;base64,{{ roc_pr_chart }}" alt="ROC and PR Curves" class="chart-img"></div>
+
+  <h3 class="subsection-title">Full Classification Report</h3>
+  <div class="table-wrapper">{{ report_table|safe }}</div>
+</section>
+
+<!-- ── Regression Metrics ─────────────────────────────────────────────── -->
+<section class="card" id="regression">
+  <h2 class="section-title">10–11. Regression Metrics (RMSE, MAE, MAPE, R²)</h2>
+  <div class="metric-row">
+    <div class="metric-card"><div class="metric-value">{{ reg_rmse }}</div><div class="metric-label">RMSE</div></div>
+    <div class="metric-card"><div class="metric-value">{{ reg_mae }}</div><div class="metric-label">MAE</div></div>
+    <div class="metric-card"><div class="metric-value">{{ reg_mape }}</div><div class="metric-label">MAPE</div></div>
+    <div class="metric-card"><div class="metric-value">{{ reg_r2 }}</div><div class="metric-label">R²</div></div>
+  </div>
+  <div class="chart-container"><img src="data:image/png;base64,{{ reg_chart }}" alt="Regression plots" class="chart-img"></div>
+  <div class="table-wrapper">{{ reg_metrics_table|safe }}</div>
+</section>
+
+<!-- ── Hyperparameter Optimization ───────────────────────────────────── -->
+<section class="card" id="hyperparams">
+  <h2 class="section-title">12–15. Hyperparameter Optimization (Grid Search, Random Search, Bayesian)</h2>
+  <div class="metric-row">
+    <div class="metric-card"><div class="metric-value">{{ gs_best_c }}</div><div class="metric-label">Grid Search Best C</div></div>
+    <div class="metric-card"><div class="metric-value">{{ gs_best_score }}</div><div class="metric-label">Grid Search Best CV Score</div></div>
+    <div class="metric-card"><div class="metric-value">{{ rs_best_c }}</div><div class="metric-label">Random Search Best C</div></div>
+    <div class="metric-card"><div class="metric-value">{{ rs_best_score }}</div><div class="metric-label">Random Search Best CV Score</div></div>
+  </div>
+  <div class="chart-container"><img src="data:image/png;base64,{{ hp_chart }}" alt="Hyperparameter search" class="chart-img"></div>
+  <div class="grid-2">
+    <div>
+      <h3 class="subsection-title">Grid Search Results</h3>
+      <div class="table-wrapper">{{ gs_table|safe }}</div>
+    </div>
+    <div>
+      <h3 class="subsection-title">Random Search – Top 5 Runs</h3>
+      <div class="table-wrapper">{{ rs_table|safe }}</div>
+    </div>
+  </div>
+  <div class="alert alert-info" style="margin-top:1rem;">
+    <strong>Bayesian Optimization</strong>: Uses a surrogate probabilistic model (e.g., Gaussian Process) to intelligently choose the next hyperparameter trial, balancing exploration and exploitation. Libraries: <code>scikit-optimize</code>, <code>optuna</code>.
+  </div>
+</section>
+
+<!-- ── Learning & Validation Curves ─────────────────────────────────── -->
+<section class="card" id="curves">
+  <h2 class="section-title">16–17. Learning Curves &amp; Validation Curves</h2>
+  <p class="section-desc">Learning curves diagnose bias (underfitting) vs variance (overfitting). Validation curves show optimal hyperparameter ranges by plotting training and CV performance.</p>
+  <div class="chart-container"><img src="data:image/png;base64,{{ lc_chart }}" alt="Learning and Validation Curves" class="chart-img"></div>
+</section>
+
+<!-- ── Calibration ───────────────────────────────────────────────────── -->
+<section class="card" id="calibration">
+  <h2 class="section-title">18–20. Probability Calibration &amp; Reliability Diagrams</h2>
+  <p class="section-desc">A well-calibrated model's confidence (predicted probability) matches actual empirical frequency. The reliability diagram (calibration curve) visualizes this alignment. Sigmoid calibration corrects overconfidence in Random Forests.</p>
+  <div class="chart-container"><img src="data:image/png;base64,{{ calib_chart }}" alt="Calibration curves" class="chart-img"></div>
+</section>
+
+<!-- ── Statistical Significance ──────────────────────────────────────── -->
+<section class="card" id="statsig">
+  <h2 class="section-title">21. Statistical Significance Testing</h2>
+  <p class="section-desc">Paired t-test on 5-fold CV scores tests if the difference between Random Forest and Gradient Boosting is statistically significant (alpha = 0.05).</p>
+  <div class="metric-row">
+    <div class="metric-card"><div class="metric-value">{{ stat_t }}</div><div class="metric-label">t-statistic</div></div>
+    <div class="metric-card"><div class="metric-value">{{ stat_p }}</div><div class="metric-label">p-value</div></div>
+    <div class="metric-card"><div class="metric-value" style="color:{% if stat_significant %}#55e6aa{% else %}#f97316{% endif %}">{% if stat_significant %}Significant{% else %}Not Significant{% endif %}</div><div class="metric-label">Result (alpha=0.05)</div></div>
+  </div>
+  <div class="chart-container"><img src="data:image/png;base64,{{ stat_chart }}" alt="Statistical significance" class="chart-img"></div>
+  <div class="table-wrapper">{{ stat_table|safe }}</div>
+</section>
+
+{% endif %}
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}TuneScope AI | LightGBM{% endblock %}
+
+{% block content %}
+{% if error %}
+<section class="error-panel">
+    <p class="eyebrow">MACHINE LEARNING / CLASSIFICATION</p>
+    <h1>LightGBM could not be generated</h1>
+    <p>{{ error }}</p>
+    <p>Check that the CSV is at <code>Data/dataset.csv</code>, install <code>lightgbm</code>, and ensure there is no local file named <code>lightgbm.py</code>.</p>
+</section>
+{% else %}
+<header class="page-heading">
+    <div>
+        <p class="eyebrow">TUNESCOPE AI <span class="crumb-slash">/</span> ENSEMBLE LEARNING</p>
+        <h1>LightGBM Classification</h1>
+        <p class="subtitle">Classify Spotify popularity categories from audio features using Light Gradient Boosting Machine.</p>
+    </div>
+    <div class="connection-badge"><span class="status-dot"></span> Model trained on {{ "{:,}".format(total_records) }} records</div>
+</header>
+
+<div class="gradientboosting-kpis">
+    <div class="gradientboosting-kpi"><span>Test Accuracy</span><strong>{{ accuracy_display }}</strong><small>Held-out test records</small></div>
+    <div class="gradientboosting-kpi"><span>Macro F1 Score</span><strong>{{ macro_f1_display }}</strong><small>Balances all five classes</small></div>
+    <div class="gradientboosting-kpi"><span>Audio Features</span><strong>{{ feature_count }}</strong><small>Popularity excluded from inputs</small></div>
+    <div class="gradientboosting-kpi"><span>Train / Test</span><strong>{{ "{:,}".format(training_records) }} / {{ "{:,}".format(testing_records) }}</strong><small>80% / 20% stratified split</small></div>
+</div>
+
+<section class="gradientboosting-section" id="model-information">
+    <div class="section-heading"><div><p class="eyebrow">01 / MODEL SETUP</p><h2>Model Information</h2><p class="section-description">Algorithm settings, task definition, target categories, and evaluation split.</p></div><span class="section-chip">LGBMClassifier</span></div>
+    <div class="gradientboosting-note">Popularity is converted into five project-defined categories. The popularity score is not used as an input feature, preventing direct target leakage.</div>
+    <div class="table-scroll gradientboosting-table-scroll">{{ model_info_table|safe }}</div>
+</section>
+
+<section class="gradientboosting-section" id="features-used">
+    <div class="section-heading"><div><p class="eyebrow">02 / INPUT VARIABLES</p><h2>Features Used</h2><p class="section-description">Numerical audio characteristics used to predict the popularity category.</p></div><span class="section-chip">{{ feature_count }} features</span></div>
+    <div class="table-scroll gradientboosting-table-scroll">{{ features_table|safe }}</div>
+    <div class="gradientboosting-note">Missing input values are imputed using medians learned from training data. The original CSV is not modified.</div>
+</section>
+
+<section class="gradientboosting-section" id="model-performance">
+    <div class="section-heading"><div><p class="eyebrow">03 / EVALUATION</p><h2>Model Performance</h2><p class="section-description">Metrics calculated on held-out test records.</p></div></div>
+    <div class="table-scroll gradientboosting-table-scroll">{{ performance_table|safe }}</div>
+</section>
+
+<section class="gradientboosting-section" id="confusion-matrix">
+    <div class="section-heading"><div><p class="eyebrow">04 / PREDICTION ERROR</p><h2>Confusion Matrix</h2><p class="section-description">Rows represent actual categories; columns represent predicted categories. Diagonal cells are correct predictions.</p></div><span class="section-chip">{{ class_count }} categories</span></div>
+    <div class="gradientboosting-two-column">
+        <div class="gradientboosting-panel"><h3>Confusion Matrix Visualization</h3><img class="gradientboosting-chart" src="data:image/png;base64,{{ confusion_matrix_chart }}" alt="LightGBM confusion matrix chart"></div>
+        <div class="gradientboosting-panel"><h3>Confusion Matrix Values</h3><div class="table-scroll gradientboosting-table-scroll gradientboosting-matrix-table">{{ confusion_matrix_table|safe }}</div></div>
+    </div>
+    <h3 class="gradientboosting-subheading">Popularity Category Definitions</h3>
+    <div class="table-scroll gradientboosting-table-scroll">{{ class_distribution_table|safe }}</div>
+</section>
+
+<section class="gradientboosting-section" id="feature-importance">
+    <div class="section-heading"><div><p class="eyebrow">05 / MODEL INTERPRETATION</p><h2>Feature Importance</h2><p class="section-description">Relative importance values learned by the fitted LightGBM trees.</p></div></div>
+    <div class="gradientboosting-two-column importance-columns">
+        <div class="gradientboosting-panel"><h3>Importance Chart</h3><img class="gradientboosting-chart" src="data:image/png;base64,{{ feature_importance_chart }}" alt="LightGBM feature importance chart"></div>
+        <div class="gradientboosting-panel"><h3>Importance Values</h3><div class="table-scroll gradientboosting-table-scroll gradientboosting-importance-scroll">{{ feature_importance_table|safe }}</div></div>
+    </div>
+</section>
+
+<section class="gradientboosting-section" id="classification-report">
+    <div class="section-heading"><div><p class="eyebrow">06 / CLASS-WISE METRICS</p><h2>Classification Report</h2><p class="section-description">Precision, recall, F1 score, and support for every popularity category, plus macro and weighted averages.</p></div></div>
+    <div class="table-scroll gradientboosting-table-scroll">{{ classification_report_table|safe }}</div>
+    <div class="gradientboosting-note">Popularity ranges are project-defined categories, not official Spotify classifications. Scores may differ from other models because each algorithm learns different patterns.</div>
+</section>
+
+<p class="gradientboosting-footer"><span class="status-dot"></span> LightGBM results are calculated from your dataset at runtime with a fixed random seed for reproducibility.</p>
+{% endif %}
+{% endblock %}

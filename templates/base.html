@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TuneScope AI{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='charts/style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+<div class="app-layout">
+    <aside class="sidebar">
+        <a class="brand" href="{{ url_for('dataset_page') }}" aria-label="TuneScope AI home">
+            <span class="brand-mark" aria-hidden="true">
+                <svg viewBox="0 0 36 36" role="img" aria-hidden="true"><path d="M4 19h5l3-8 4 15 4-20 4 19 3-8h5" /></svg>
+            </span>
+            <span class="brand-copy"><strong>TuneScope</strong><small>MUSIC INTELLIGENCE</small></span>
+        </a>
+        <div class="workspace-label">WORKSPACE</div>
+        <nav class="side-nav" aria-label="Main navigation">
+            <a class="nav-item {% if active_page == 'dataset' %}active{% endif %}" href="{{ url_for('dataset_page') }}" {% if active_page == 'dataset' %}aria-current="page"{% endif %}>
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5h16v13H4zM8 5.5v13M16 5.5v13M4 10h16M4 14.5h16"/></svg></span><span>Dataset</span>
+                {% if active_page == 'dataset' %}<span class="nav-arrow" aria-hidden="true">↗</span>{% endif %}
+            </a>
+            <a class="nav-item {% if active_page == 'eda' %}active{% endif %}" href="{{ url_for('eda_page') }}" {% if active_page == 'eda' %}aria-current="page"{% endif %}>
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M7 16l4-5 3 2 5-7"/></svg></span><span>EDA</span>
+                {% if active_page == 'eda' %}<span class="nav-arrow" aria-hidden="true">↗</span>{% endif %}
+            </a>
+            <a class="nav-item {% if active_page == 'preprocessing' %}active{% endif %}" href="{{ url_for('preprocessing_page') }}" {% if active_page == 'preprocessing' %}aria-current="page"{% endif %}>
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16M7 5v5M17 5v9M4 14h16M7 14v5M17 14v5"/><circle cx="7" cy="10" r="1.4"/><circle cx="17" cy="14" r="1.4"/><circle cx="7" cy="19" r="1.4"/></svg></span><span>Preprocessing</span>
+                {% if active_page == 'preprocessing' %}<span class="nav-arrow" aria-hidden="true">↗</span>{% endif %}
+            </a>
+            <a class="nav-item {% if active_page == 'regressions' %}active{% endif %}" href="{{ url_for('regressions_page') }}" {% if active_page == 'regressions' %}aria-current="page"{% endif %}>
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M6.5 15.5l4-5 3 2 4.5-6"/><circle cx="6.5" cy="15.5" r="1"/><circle cx="10.5" cy="10.5" r="1"/><circle cx="13.5" cy="12.5" r="1"/><circle cx="18" cy="6.5" r="1"/></svg></span><span>Regressions</span>
+                {% if active_page == 'regressions' %}<span class="nav-arrow" aria-hidden="true">↗</span>{% endif %}
+            </a>
+            <a class="nav-item {% if active_page == 'adaboost' %}active{% endif %}" href="{{ url_for('adaboost_page') }}" {% if active_page == 'adaboost' %}aria-current="page"{% endif %}>
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M7 15l3-4 3 2 4-7"/><circle cx="7" cy="15" r="1"/><circle cx="10" cy="11" r="1"/><circle cx="13" cy="13" r="1"/><circle cx="17" cy="6" r="1"/></svg></span><span>AdaBoost</span>
+                {% if active_page == 'adaboost' %}<span class="nav-arrow" aria-hidden="true">↗</span>{% endif %}
+            </a>
+            <a class="nav-item {% if active_page == 'random_forest' %}active{% endif %}" href="{{ url_for('random_forest_page') }}" {% if active_page == 'random_forest' %}aria-current="page"{% endif %}>
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4v4M12 8H6v4M12 8h6v4M6 12v4M18 12v4M6 16H4M6 16h4M18 16h2M18 16h-4M10 16v4M14 16v4"/><circle cx="12" cy="4" r="1.2"/><circle cx="6" cy="12" r="1.2"/><circle cx="18" cy="12" r="1.2"/><circle cx="10" cy="20" r="1.2"/><circle cx="14" cy="20" r="1.2"/></svg></span><span>Random Forest</span>
+                {% if active_page == 'random_forest' %}<span class="nav-arrow" aria-hidden="true">↗</span>{% endif %}
+            </a>
+            <a class="nav-item {% if active_page == 'gradient_boosting' %}active{% endif %}" href="{{ url_for('gradient_boosting_page') }}" {% if active_page == 'gradient_boosting' %}aria-current="page"{% endif %}>
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M7 15l3-5 3 2 4-7"/><circle cx="7" cy="15" r="1.1"/><circle cx="10" cy="10" r="1.1"/><circle cx="13" cy="12" r="1.1"/><circle cx="17" cy="5" r="1.1"/></svg></span><span>Gradient Boosting</span>
+                {% if active_page == 'gradient_boosting' %}<span class="nav-arrow" aria-hidden="true">↗</span>{% endif %}
+            </a>
+            <a class="nav-item {% if active_page == 'xgboost' %}active{% endif %}" href="{{ url_for('xgboost_page') }}" {% if active_page == 'xgboost' %}aria-current="page"{% endif %}>
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19M12 3v18M3 12h18"/></svg></span><span>XGBoost</span>
+                {% if active_page == 'xgboost' %}<span class="nav-arrow" aria-hidden="true">↗</span>{% endif %}
+            </a>
+            <a class="nav-item {% if active_page == 'lightgbm' %}active{% endif %}" href="{{ url_for('lightgbm_page') }}" {% if active_page == 'lightgbm' %}aria-current="page"{% endif %}>
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M7 15l3-5 3 2 4-7"/><circle cx="7" cy="15" r="1"/><circle cx="10" cy="10" r="1"/><circle cx="13" cy="12" r="1"/><circle cx="17" cy="5" r="1"/></svg></span><span>LightGBM</span>
+                {% if active_page == 'lightgbm' %}<span class="nav-arrow" aria-hidden="true">↗</span>{% endif %}
+            </a>
+
+            <a class="nav-item {% if active_page == 'feature_importance' %}active{% endif %}" href="{{ url_for('feature_importance_page') }}" {% if active_page == 'feature_importance' %}aria-current="page"{% endif %}>
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M7 15l3-5 3 2 4-7"/><circle cx="7" cy="15" r="1"/><circle cx="10" cy="10" r="1"/><circle cx="13" cy="12" r="1"/><circle cx="17" cy="5" r="1"/></svg></span><span>Feature Importance</span>
+                {% if active_page == 'feature_importance' %}<span class="nav-arrow" aria-hidden="true">↗</span>{% endif %}
+            </a>
+            <a class="nav-item {% if active_page == 'pca' %}active{% endif %}" href="{{ url_for('pca_page') }}" {% if active_page == 'pca' %}aria-current="page"{% endif %}>
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M7 15l4-5 3 2 4-7"/><circle cx="7" cy="15" r="1"/><circle cx="11" cy="10" r="1"/><circle cx="14" cy="12" r="1"/><circle cx="18" cy="5" r="1"/></svg></span><span>PCA</span>
+                {% if active_page == 'pca' %}<span class="nav-arrow" aria-hidden="true">↗</span>{% endif %}
+            </a>
+            <div class="workspace-label" style="margin-top:1rem;">CO4 – UNSUPERVISED</div>
+            <a class="nav-item {% if active_page == 'clustering' %}active{% endif %}" href="{{ url_for('clustering_page') }}" {% if active_page == 'clustering' %}aria-current="page"{% endif %}>
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="6" cy="8" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><circle cx="12" cy="13" r="2.5"/><path d="M6 10v4M18 10v4M8 8h4M12 8h4M8 18h2M14 18h2"/></svg></span><span>Clustering & DR</span>
+                {% if active_page == 'clustering' %}<span class="nav-arrow" aria-hidden="true">↗</span>{% endif %}
+            </a>
+            <div class="workspace-label" style="margin-top:1rem;">CO5 – EVALUATION</div>
+            <a class="nav-item {% if active_page == 'evaluation' %}active{% endif %}" href="{{ url_for('evaluation_page') }}" {% if active_page == 'evaluation' %}aria-current="page"{% endif %}>
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></span><span>Model Evaluation</span>
+                {% if active_page == 'evaluation' %}<span class="nav-arrow" aria-hidden="true">↗</span>{% endif %}
+            </a>
+            <div class="workspace-label" style="margin-top:1rem;">CO6 – DEPLOYMENT</div>
+            <a class="nav-item {% if active_page == 'ml_engineering' %}active{% endif %}" href="{{ url_for('ml_engineering_page') }}" {% if active_page == 'ml_engineering' %}aria-current="page"{% endif %}>
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8h3M7 11h5M14 8l2 2-2 2"/></svg></span><span>ML Engineering</span>
+                {% if active_page == 'ml_engineering' %}<span class="nav-arrow" aria-hidden="true">↗</span>{% endif %}
+            </a>
+        </nav>
+    </aside>
+    <main class="main-content">{% block content %}{% endblock %}</main>
+</div>
+{% block scripts %}{% endblock %}
+</body>
+</html>

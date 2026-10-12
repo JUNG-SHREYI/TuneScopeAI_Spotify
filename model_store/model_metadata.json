@@ -1,0 +1,25 @@
+{
+  "model_name": "TuneScope RF Classifier",
+  "version": "1.0.0",
+  "features": [
+    "duration_ms",
+    "explicit",
+    "danceability",
+    "energy",
+    "key",
+    "loudness",
+    "mode",
+    "speechiness",
+    "acousticness",
+    "instrumentalness",
+    "liveness",
+    "valence",
+    "tempo",
+    "time_signature"
+  ],
+  "n_classes": 3,
+  "accuracy_test": 0.6158,
+  "created_at": "2026-10-12T12:12:06",
+  "framework": "scikit-learn",
+  "packaging": "joblib"
+}

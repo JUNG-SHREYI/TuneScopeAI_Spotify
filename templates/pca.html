@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}TuneScope AI | PCA{% endblock %}
+
+{% block content %}
+{% if error %}
+<section class="error-panel">
+    <p class="eyebrow">TUNESCOPE AI / DIMENSION REDUCTION</p>
+    <h1>PCA could not be generated</h1>
+    <p>{{ error }}</p>
+    <p>Check that the Spotify CSV is available at <code>Data/dataset.csv</code>.</p>
+</section>
+{% else %}
+<header class="page-heading">
+    <div>
+        <p class="eyebrow">TUNESCOPE AI <span class="crumb-slash">/</span> DIMENSION REDUCTION</p>
+        <h1>Principal Component Analysis</h1>
+        <p class="subtitle">Reduce correlated audio features while retaining at least 95% of their variance.</p>
+    </div>
+    <div class="connection-badge"><span class="status-dot"></span> Spotify dataset connected</div>
+</header>
+
+<div class="pca-summary-grid">
+    <article class="pca-summary-card">
+        <span class="pca-summary-label">Components for 95% variance</span>
+        <strong class="pca-summary-value">{{ components_for_95 }}</strong>
+        <span class="pca-summary-note">Minimum principal components selected</span>
+    </article>
+    <article class="pca-summary-card">
+        <span class="pca-summary-label">Variance retained</span>
+        <strong class="pca-summary-value">{{ "%.2f"|format(variance_95_actual) }}%</strong>
+        <span class="pca-summary-note">Cumulative variance in selected components</span>
+    </article>
+    <article class="pca-summary-card">
+        <span class="pca-summary-label">Features used</span>
+        <strong class="pca-summary-value">{{ total_features }}</strong>
+        <span class="pca-summary-note">Numeric music characteristics</span>
+    </article>
+    <article class="pca-summary-card">
+        <span class="pca-summary-label">Records transformed</span>
+        <strong class="pca-summary-value">{{ "{:,}".format(total_rows) }}</strong>
+        <span class="pca-summary-note">All rows from the source dataset</span>
+    </article>
+</div>
+
+<section class="pca-section" id="pca-components">
+    <div class="pca-section-title">
+        <div>
+            <h2>Components for 95% Variance</h2>
+            <p>PCA uses the smallest number of components whose cumulative explained variance reaches or exceeds 95%.</p>
+        </div>
+        <span class="pca-tag">{{ components_for_95 }} components selected</span>
+    </div>
+    <p class="pca-note">The original popularity column and non-feature metadata are excluded from PCA inputs. Numerical audio features are median-imputed when needed and standardized before PCA; the source CSV is not modified.</p>
+    <div class="pca-feature-list">
+        {% for component in loading_component_names %}
+        <span class="pca-feature-chip">{{ component }}</span>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="pca-section" id="pca-features">
+    <div class="pca-section-title">
+        <div>
+            <h2>Features Used</h2>
+            <p>Audio-related numeric columns included in the PCA model.</p>
+        </div>
+        <span class="pca-tag">{{ total_features }} features</span>
+    </div>
+    <div class="pca-feature-list">
+        {% for feature in features %}
+        <span class="pca-feature-chip">{{ feature }}</span>
+        {% endfor %}
+    </div>
+    {% if dropped_all_missing_features %}
+    <p class="pca-note" style="margin-top:15px;">Columns omitted because all their values were missing: {{ dropped_all_missing_features|join(', ') }}.</p>
+    {% endif %}
+</section>
+
+<section class="pca-section" id="explained-variance">
+    <div class="pca-section-title">
+        <div>
+            <h2>Explained Variance</h2>
+            <p>The cumulative curve shows how much total variance is retained as principal components are added.</p>
+        </div>
+        <span class="pca-tag">95% target</span>
+    </div>
+    <div class="pca-chart-frame">
+        <img src="data:image/png;base64,{{ explained_variance_chart }}" alt="PCA cumulative explained variance graph">
+    </div>
+    <div class="pca-table-scroll" style="margin-top:16px;">
+        {{ variance_table|safe }}
+    </div>
+</section>
+
+<section class="pca-section" id="pca-loadings">
+    <div class="pca-section-title">
+        <div>
+            <h2>PCA Feature Loadings</h2>
+            <p>Loading values show how each original feature contributes to the selected principal components.</p>
+        </div>
+        <span class="pca-tag">PC1–PC{{ components_for_95 }}</span>
+    </div>
+    <div class="pca-table-scroll">
+        {{ loadings_table|safe }}
+    </div>
+</section>
+
+<section class="pca-section" id="pca-transformed-records">
+    <div class="pca-section-title">
+        <div>
+            <h2>PCA Transformed Records</h2>
+            <p>All source records transformed into the {{ components_for_95 }} components needed to retain at least 95% variance.</p>
+        </div>
+        <span class="pca-tag">{{ "{:,}".format(transformed_total_rows) }} records</span>
+    </div>
+    <p class="pca-note">Showing records {{ transformed_first_row }}–{{ transformed_last_row }} of {{ "{:,}".format(transformed_total_rows) }}. Use pagination to browse the transformed dataset.</p>
+    <div class="pca-table-scroll">
+        {{ transformed_table|safe }}
+    </div>
+    <div class="pca-pagination">
+        <span>Page {{ transformed_page }} of {{ transformed_total_pages }}</span>
+        <div class="pca-pagination-links">
+            {% if transformed_page > 1 %}
+                <a href="{{ url_for('pca_page', page=1) }}">First</a>
+                <a href="{{ url_for('pca_page', page=transformed_page-1) }}">Previous</a>
+            {% else %}
+                <span>First</span><span>Previous</span>
+            {% endif %}
+            <span class="current">{{ transformed_page }}</span>
+            {% if transformed_page < transformed_total_pages %}
+                <a href="{{ url_for('pca_page', page=transformed_page+1) }}">Next</a>
+                <a href="{{ url_for('pca_page', page=transformed_total_pages) }}">Last</a>
+            {% else %}
+                <span>Next</span><span>Last</span>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

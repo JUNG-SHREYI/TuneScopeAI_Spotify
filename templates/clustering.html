@@ -1,0 +1,112 @@
+﻿{% extends "base.html" %}
+{% block title %}Clustering & Dimensionality Reduction – TuneScope AI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">CO4 – Unsupervised Learning &amp; Dimensionality Reduction</h1>
+  <p class="page-subtitle">K-Means, Hierarchical Clustering, DBSCAN, PCA, t-SNE, UMAP, Isolation Forest &amp; Feature Engineering</p>
+</div>
+
+{% if error %}
+<div class="alert alert-error">{{ error }}</div>
+{% else %}
+
+<!-- ── K-Means ──────────────────────────────────────────────────────────── -->
+<section class="card" id="kmeans">
+  <h2 class="section-title">1. K-Means Clustering (K-Means++ Init · Lloyd's Algorithm)</h2>
+  <div class="metric-row">
+    <div class="metric-card"><div class="metric-value">{{ km_best_k }}</div><div class="metric-label">Optimal k (best silhouette)</div></div>
+    <div class="metric-card"><div class="metric-value">{{ km_best_sil }}</div><div class="metric-label">Best Silhouette Score</div></div>
+    <div class="metric-card"><div class="metric-value">{{ hier_sil }}</div><div class="metric-label">Hierarchical Silhouette</div></div>
+    <div class="metric-card"><div class="metric-value">{{ dbscan_best_sil }}</div><div class="metric-label">DBSCAN Best Silhouette</div></div>
+  </div>
+
+  <h3 class="subsection-title">Elbow Method &amp; Silhouette Score vs k</h3>
+  <div class="chart-container"><img src="data:image/png;base64,{{ km_elbow_chart }}" alt="Elbow and Silhouette charts" class="chart-img"></div>
+  <div class="table-wrapper">{{ km_elbow_table|safe }}</div>
+
+  <h3 class="subsection-title">Silhouette Analysis (k={{ km_best_k }})</h3>
+  <div class="chart-container"><img src="data:image/png;base64,{{ km_sil_chart }}" alt="Silhouette plot" class="chart-img"></div>
+
+  <h3 class="subsection-title">Cluster Summary</h3>
+  <div class="table-wrapper">{{ km_cluster_table|safe }}</div>
+</section>
+
+<!-- ── Mini-Batch K-Means ──────────────────────────────────────────────── -->
+<section class="card" id="minibatch">
+  <h2 class="section-title">4. Mini-Batch K-Means vs Full K-Means</h2>
+  <p class="section-desc">Mini-Batch K-Means uses random subsets (batches) for each update step, drastically reducing training time on large datasets with minimal accuracy loss.</p>
+  <div class="table-wrapper">{{ mb_table|safe }}</div>
+</section>
+
+<!-- ── Hierarchical ────────────────────────────────────────────────────── -->
+<section class="card" id="hierarchical">
+  <h2 class="section-title">8. Hierarchical Clustering &amp; Dendrogram Analysis</h2>
+  <p class="section-desc">Ward linkage agglomerative clustering on a 300-sample subset. The dendrogram shows the merge hierarchy — cut height determines the number of clusters.</p>
+  <div class="chart-container"><img src="data:image/png;base64,{{ dendro_chart }}" alt="Dendrogram" class="chart-img"></div>
+  <div class="metric-row">
+    <div class="metric-card"><div class="metric-value">{{ hier_clusters }}</div><div class="metric-label">Clusters (cut)</div></div>
+    <div class="metric-card"><div class="metric-value">{{ hier_sil }}</div><div class="metric-label">Silhouette Score</div></div>
+  </div>
+</section>
+
+<!-- ── DBSCAN ──────────────────────────────────────────────────────────── -->
+<section class="card" id="dbscan">
+  <h2 class="section-title">10. DBSCAN – Density-Based Clustering</h2>
+  <p class="section-desc">DBSCAN finds clusters of arbitrary shape and marks outliers as noise. No k needed — density parameters eps and min_samples control granularity.</p>
+  <h3 class="subsection-title">eps Sensitivity Analysis</h3>
+  <div class="table-wrapper">{{ dbscan_table|safe }}</div>
+  <p class="section-desc">Best eps: <strong>{{ dbscan_best_eps }}</strong> — Silhouette: <strong>{{ dbscan_best_sil }}</strong></p>
+  <div class="chart-container"><img src="data:image/png;base64,{{ dbscan_chart }}" alt="DBSCAN Clusters" class="chart-img"></div>
+</section>
+
+<!-- ── PCA + t-SNE + UMAP ─────────────────────────────────────────────── -->
+<section class="card" id="dimred">
+  <h2 class="section-title">12–14. PCA, t-SNE &amp; UMAP – Visualization &amp; Feature Compression</h2>
+  <p class="section-desc">All three methods project high-dimensional audio features into 2D for visualization. PCA is linear; t-SNE and UMAP preserve local neighbourhood structure non-linearly.</p>
+
+  <h3 class="subsection-title">PCA – Feature Compression &amp; Loading Heatmap</h3>
+  <div class="chart-container"><img src="data:image/png;base64,{{ compression_chart }}" alt="PCA Compression" class="chart-img"></div>
+  <div class="metric-row">
+    <div class="metric-card"><div class="metric-value">{{ total_features }}</div><div class="metric-label">Original Features</div></div>
+    <div class="metric-card"><div class="metric-value">{{ n95_components }}</div><div class="metric-label">PCs for 95% Variance</div></div>
+  </div>
+
+  <h3 class="subsection-title">t-SNE Visualization</h3>
+  <div class="chart-container"><img src="data:image/png;base64,{{ tsne_chart }}" alt="t-SNE" class="chart-img"></div>
+
+  {% if umap_available %}
+  <h3 class="subsection-title">UMAP Visualization</h3>
+  <div class="chart-container"><img src="data:image/png;base64,{{ umap_chart }}" alt="UMAP" class="chart-img"></div>
+  {% else %}
+  <div class="alert alert-info">UMAP requires the <code>umap-learn</code> package. Install it with: <code>pip install umap-learn</code></div>
+  {% endif %}
+</section>
+
+<!-- ── Isolation Forest ────────────────────────────────────────────────── -->
+<section class="card" id="anomaly">
+  <h2 class="section-title">18. Anomaly Detection – Isolation Forest</h2>
+  <p class="section-desc">Isolation Forest isolates anomalies by randomly partitioning features. Anomalies require fewer splits to isolate and receive lower anomaly scores.</p>
+  <div class="metric-row">
+    <div class="metric-card"><div class="metric-value">{{ iso_n_normal }}</div><div class="metric-label">Normal Points</div></div>
+    <div class="metric-card"><div class="metric-value" style="color:#ef4444">{{ iso_n_anomalies }}</div><div class="metric-label">Anomalies Detected</div></div>
+  </div>
+  <div class="chart-container"><img src="data:image/png;base64,{{ iso_chart }}" alt="Isolation Forest" class="chart-img"></div>
+  <div class="table-wrapper">{{ iso_table|safe }}</div>
+</section>
+
+<!-- ── Unsupervised Feature Engineering ───────────────────────────────── -->
+<section class="card" id="features">
+  <h2 class="section-title">17 &amp; 19. Advanced Feature Engineering &amp; Unsupervised Feature Generation</h2>
+  <p class="section-desc">Cluster IDs from K-Means and principal components from PCA are new unsupervised features that capture hidden structure, ready to enrich supervised models.</p>
+  <div class="table-wrapper">{{ feat_engineering_table|safe }}</div>
+</section>
+
+<!-- ── Features Used ──────────────────────────────────────────────────── -->
+<section class="card" id="features-used">
+  <h2 class="section-title">Audio Features Used</h2>
+  <div class="feature-chips">{% for f in features_used %}<span class="feature-chip">{{ f }}</span>{% endfor %}</div>
+</section>
+
+{% endif %}
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}TuneScope AI | Exploratory Data Analysis{% endblock %}
+{% block content %}
+{% if error %}
+    <section class="error-panel">
+        <p class="eyebrow">EXPLORATORY DATA ANALYSIS</p>
+        <h1>EDA could not be generated</h1>
+        <p>{{ error }}</p>
+        <p class="help-text">Check that your CSV is available at <code>Data/dataset.csv</code>.</p>
+    </section>
+{% else %}
+    <header class="page-heading">
+        <div>
+            <p class="eyebrow">TUNESCOPE AI <span class="crumb-slash">/</span> DATA UNDERSTANDING</p>
+            <h1>Exploratory Data Analysis</h1>
+            <p class="subtitle">Inspect data quality, missing values, numerical patterns, feature distributions, and track popularity.</p>
+        </div>
+        <div class="connection-badge"><span class="status-dot"></span> EDA on {{ "{:,}".format(total_rows) }} records</div>
+    </header>
+
+    <section class="eda-section" id="missing-values">
+        <div class="section-heading">
+            <div><p class="eyebrow">01 / DATA QUALITY</p><h2>Missing Values</h2><p class="section-description">Missing cells and percentages for every column in the original CSV.</p></div>
+            <span class="section-chip">{{ "{:,}".format(missing_count) }} missing cells</span>
+        </div>
+        {% if no_missing_values %}<div class="notice success-notice">No missing values were found in the original dataset.</div>{% endif %}
+        <div class="table-scroll eda-table-scroll">{{ missing_table|safe }}</div>
+    </section>
+
+    <section class="eda-section" id="missing-imputations">
+        <div class="section-heading">
+            <div><p class="eyebrow">02 / DATA PREPARATION</p><h2>Missing Value Imputations</h2><p class="section-description">A separate in-memory copy is imputed for analysis. The original CSV is not changed.</p></div>
+            <span class="section-chip">{{ "{:,}".format(imputed_cells) }} cells handled</span>
+        </div>
+        {% if no_imputations %}
+            <div class="notice success-notice">No imputations were needed because every column is complete.</div>
+        {% else %}
+            <div class="notice">Numerical features use the median. Categorical and Boolean features use the mode; columns with no observed value use “Unknown” (or 0 if a numeric median cannot be calculated).</div>
+            <div class="table-scroll eda-table-scroll">{{ imputation_table|safe }}</div>
+        {% endif %}
+    </section>
+
+    <section class="eda-section" id="descriptive-statistics">
+        <div class="section-heading">
+            <div><p class="eyebrow">03 / NUMERICAL SUMMARY</p><h2>Descriptive Statistics</h2><p class="section-description">Count, mean, standard deviation, minimum, quartiles, median, and maximum for numerical columns. Values use the EDA imputed copy.</p></div>
+        </div>
+        {% if no_numeric_features %}<div class="notice">No numerical features were found for descriptive statistics.</div>
+        {% else %}<div class="table-scroll eda-table-scroll">{{ descriptive_table|safe }}</div>{% endif %}
+    </section>
+
+    <section class="eda-section" id="feature-distribution">
+        <div class="section-heading">
+            <div><p class="eyebrow">04 / FEATURE SHAPES</p><h2>Feature Distribution</h2><p class="section-description">Histograms show how values are distributed across the main numerical music features.</p></div>
+            <span class="section-chip">{{ distributions|length }} features</span>
+        </div>
+        {% if distributions %}
+            <div class="distribution-grid">
+                {% for item in distributions %}
+                    <article class="chart-card">
+                        <div class="chart-card-heading"><h3>{{ item.title }}</h3><span>{{ item.column }}</span></div>
+                        <img src="data:image/png;base64,{{ item.chart }}" alt="Histogram showing the distribution of {{ item.title }}">
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}<div class="notice">No suitable numerical features were found for distribution charts.</div>{% endif %}
+    </section>
+
+    <section class="eda-section" id="popularity-categories">
+        <div class="section-heading">
+            <div><p class="eyebrow">05 / TRACK POPULARITY</p><h2>Popularity Categories</h2><p class="section-description">Popularity scores are grouped into five descriptive ranges from 0 to 100. These are project-defined ranges.</p></div>
+        </div>
+        {% if has_popularity %}
+            <div class="popularity-layout">
+                <div class="popularity-chart-card">
+                    {% if popularity_chart %}<img src="data:image/png;base64,{{ popularity_chart }}" alt="Bar chart of track popularity categories">{% endif %}
+                </div>
+                <div class="table-scroll eda-table-scroll popularity-table-wrap">{{ popularity_table|safe }}</div>
+            </div>
+        {% else %}
+            <div class="notice">The dataset does not contain a <code>popularity</code> column, so popularity categories cannot be calculated.</div>
+        {% endif %}
+    </section>
+{% endif %}
+{% endblock %}
